@@ -1,67 +1,23 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-    input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; outline: none; }
-    .btn { background: #10b981; color: white; padding: 15px; border-radius: 12px; width: 100%; border: none; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    #preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 10px auto; border: 3px solid #10b981; display: none; }
-    .file-label { background: #334155; padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-block; margin-bottom: 5px; }
-    .switch-link { color: #10b981; text-decoration: underline; cursor: pointer; font-weight: bold; }
-</style></head><body>
-    <div class="card">
-        <h2 id="title">Hesap Oluştur</h2>
-        <img id="preview">
-        <div id="reg-fields">
-            <label class="file-label">
-                🖼️ Profil İkonu Seç
-                <input type="file" id="pic-input" accept="image/*" style="display:none;" onchange="previewFile()">
-            </label>
-        </div>
-        <input type="text" id="name-input" placeholder="Kullanıcı Adı">
-        <input type="password" id="pass-input" placeholder="Şifre">
-        <button class="btn" onclick="process()">DEVAM ET</button>
-        <p style="margin-top:15px; font-size:14px; color:#94a3b8;">
-            <span id="switch-text">Bir hesabın var mı?</span> 
-            <span class="switch-link" onclick="toggleMode()" id="switch-btn">Giriş Yap</span>
-        </p>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap</title>
+    <style>
+        body { background: #050b18; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: #111a2e; padding: 40px; border-radius: 20px; border: 1px solid #00f2ff; text-align: center; width: 80%; max-width: 300px; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 10px; border: none; background: #1e293b; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #00f2ff; color: #050b18; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>HOŞ GELDİN</h2>
+        <form action="/login" method="POST">
+            <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+            <button type="submit">BAŞLA</button>
+        </form>
     </div>
-    <script>
-        let isLoginMode = false; let base64Pic = "";
-        window.onload = () => {
-            const saved = localStorage.getItem('gamehub_login');
-            if(saved) {
-                const user = JSON.parse(saved);
-                fetch('/login_api', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(user) })
-                .then(res => { if(res.ok) window.location.href="/"; });
-            }
-        };
-        function toggleMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('title').innerText = isLoginMode ? "Giriş Yap" : "Hesap Oluştur";
-            document.getElementById('reg-fields').style.display = isLoginMode ? "none" : "block";
-            document.getElementById('switch-text').innerText = isLoginMode ? "Hesabın yok mu?" : "Bir hesabın var mı?";
-            document.getElementById('switch-btn').innerText = isLoginMode ? "Kayıt Ol" : "Giriş Yap";
-        }
-        function previewFile() {
-            const file = document.getElementById('pic-input').files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => { base64Pic = reader.result; document.getElementById('preview').src = base64Pic; document.getElementById('preview').style.display = 'block'; }
-            if (file) reader.readAsDataURL(file);
-        }
-        function process() {
-            const name = document.getElementById('name-input').value;
-            const pass = document.getElementById('pass-input').value;
-            if(!name || !pass) return alert("Boş bırakma knk!");
-            fetch(isLoginMode ? '/login_api' : '/register', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name: name, password: pass, picture: base64Pic })
-            }).then(res => res.json()).then(data => {
-                if(data.status === 'ok') {
-                    localStorage.setItem('gamehub_login', JSON.stringify({name, password: pass}));
-                    window.location.href = "/";
-                } else alert(data.msg);
-            });
-        }
-    </script>
-</body></html>
+</body>
+</html>
