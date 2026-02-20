@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; }
+    .nav { background: #ff4757; padding: 15px; color: white; font-weight: bold; font-size: 20px; display: flex; justify-content: space-between; }
+    .nav a { color: white; text-decoration: none; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 10px; }
+    .circle { width: 180px; height: 180px; border-radius: 50%; background: #ff4757; border: none; color: white; font-size: 26px; font-weight: bold; margin-top: 40px; box-shadow: 0 0 30px #ff4757; cursor: pointer; transition: 0.1s; }
+    .circle:active { transform: scale(0.9); }
+    .stats { display: flex; justify-content: space-around; font-size: 24px; margin-top: 30px; }
+</style></head><body>
+    <div class="nav"><a href="/">⬅</a> <span>Hızlı Tıkla</span> <span></span></div>
+    <div class="stats"><div>Süre: <span id="time" style="color:#ff4757">10</span></div><div>Skor: <span id="score" style="color:#00ff00">0</span></div></div>
+    <button class="circle" id="btn" onclick="tap()">BAŞLA</button>
+    <br><br><button onclick="location.reload()" style="padding:10px 20px; border-radius:10px; background:#444; color:white; border:none;">Sıfırla</button>
+    <script>
+        let s=0, t=10, r=false;
+        function tap(){
+            if(!r){
+                r=true; document.getElementById('btn').innerText="TIKLA!";
+                let i=setInterval(()=>{ t--; document.getElementById('time').innerText=t;
+                    if(t<=0){ clearInterval(i); document.getElementById('btn').disabled=true; document.getElementById('btn').innerText="BİTTİ"; }
+                },1000);
+            }
+            s++; document.getElementById('score').innerText=s;
+        }
+    </script>
+</body></html>

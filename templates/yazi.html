@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; }
+    .nav { background: #00ff00; padding: 15px; color: black; font-weight: bold; font-size: 20px; display: flex; justify-content: space-between; }
+    .nav a { color: black; text-decoration: none; background: rgba(255,255,255,0.4); padding: 5px 15px; border-radius: 10px; }
+    .word { font-size: 40px; color: #00ff00; margin: 50px 0; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px #00ff00; }
+    input { width: 80%; max-width: 300px; padding: 15px; font-size: 22px; text-align: center; background: #1e1e1e; border: 2px solid #00ff00; color: white; border-radius: 15px; outline: none; }
+</style></head><body>
+    <div class="nav"><a href="/">⬅</a> <span>Hızlı Yazı</span> <span></span></div>
+    <div class="word" id="tw">HAZIRLAN</div>
+    <input type="text" id="inp" placeholder="Buraya yaz..." oninput="chk()" autocomplete="off">
+    <h2 style="margin-top:30px">Skor: <span id="sc" style="color:#00ff00">0</span></h2>
+    <script>
+        const w=["termux","hacker","python","linux","cyber","mobile","oyun","kodlama"];
+        let cw, s=0;
+        function nx(){ cw=w[Math.floor(Math.random()*w.length)]; document.getElementById('tw').innerText=cw; document.getElementById('inp').value=""; }
+        function chk(){ if(document.getElementById('inp').value.toLowerCase()===cw){ s++; document.getElementById('sc').innerText=s; nx(); } }
+        nx();
+    </script>
+</body></html>

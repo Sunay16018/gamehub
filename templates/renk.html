@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; }
+    .nav { background: #e74c3c; padding: 15px; color: white; font-weight: bold; font-size: 20px; display: flex; justify-content: space-between; }
+    .nav a { color: white; text-decoration: none; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; justify-content: center; margin-top: 30px; }
+    .c { width: 90px; height: 90px; background: #333; border-radius: 15px; cursor: pointer; transition: 0.1s; }
+    .active { background: #e74c3c; box-shadow: 0 0 20px #e74c3c; }
+</style></head><body>
+    <div class="nav"><a href="/">⬅</a> <span>Renk Yakala</span> <span></span></div>
+    <h2 style="margin-top:20px;">Skor: <span id="sc">0</span> | Süre: <span id="tm">15</span></h2>
+    <div class="grid" id="bd">
+        <div class="c" id="c0"></div><div class="c" id="c1"></div><div class="c" id="c2"></div>
+        <div class="c" id="c3"></div><div class="c" id="c4"></div><div class="c" id="c5"></div>
+        <div class="c" id="c6"></div><div class="c" id="c7"></div><div class="c" id="c8"></div>
+    </div>
+    <script>
+        let s=0, t=15, ac=null, int, gm=false;
+        function rnd(){ if(ac!==null) document.getElementById('c'+ac).classList.remove("active");
+            ac = Math.floor(Math.random()*9); document.getElementById('c'+ac).classList.add("active");
+        }
+        for(let i=0;i<9;i++){
+            document.getElementById('c'+i).onclick=()=>{
+                if(!gm){ gm=true; let ti=setInterval(()=>{ t--; document.getElementById('tm').innerText=t; if(t<=0){ clearInterval(ti); clearInterval(int); alert("Süre bitti! Skor: "+s); location.reload(); } },1000); int=setInterval(rnd, 600); rnd(); }
+                if(i===ac){ s++; document.getElementById('sc').innerText=s; document.getElementById('c'+ac).classList.remove("active"); rnd(); }
+            }
+        }
+    </script>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<style>
+    body { background: #050b18; color: white; text-align: center; font-family: sans-serif; }
+    .board { display: none; grid-template-columns: repeat(3, 80px); gap: 5px; justify-content: center; margin-top: 20px; }
+    .cell { width: 80px; height: 80px; background: #111a2e; border: 2px solid #00f2ff; font-size: 30px; display: flex; align-items: center; justify-content: center; }
+    .btn { background: #00f2ff; border: none; padding: 10px 20px; margin: 10px; font-weight: bold; cursor: pointer; }
+</style></head><body>
+    <div id="menu">
+        <h3>XOX MODU</h3>
+        <button class="btn" onclick="start(false)">TEK KİŞİLİK</button>
+        <button class="btn" onclick="start(true)">İKİ KİŞİLİK (ONLINE)</button>
+    </div>
+    <div id="status"></div>
+    <div id="board" class="board"></div>
+    <script>
+        const socket = io(); let board = ["","","","","","","","",""]; 
+        let mySym = "X", turn = "X", isMulti = false, active = false;
+        function start(multi) {
+            isMulti = multi; document.getElementById('menu').style.display='none';
+            if(multi) { socket.emit('join_xox', {username: "{{username}}"}); document.getElementById('status').innerText="Bekleniyor (1/2)..."; }
+            else { active=true; document.getElementById('board').style.display='grid'; render(); }
+        }
+        socket.on('start_multiplayer', () => { active=true; document.getElementById('board').style.display='grid'; render(); });
+        function render() {
+            const b = document.getElementById('board'); b.innerHTML = "";
+            board.forEach((v, i) => { const c = document.createElement('div'); c.className='cell'; c.innerText=v; c.onclick=()=>move(i); b.appendChild(c); });
+        }
+        function move(i) {
+            if(!active || board[i]!="") return;
+            board[i] = turn; render(); if(check()) return;
+            if(isMulti) { socket.emit('xox_move', {index:i, symbol:turn}); active=false; }
+            else { active=false; setTimeout(bot, 500); }
+        }
+        socket.on('receive_move', (d) => { board[d.index]=d.symbol; turn=d.symbol==="X"?"O":"X"; active=true; render(); check(); });
+        function bot() { 
+            let e = board.map((v,i)=>v===""?i:null).filter(v=>v!==null);
+            if(e.length>0) { board[e[Math.floor(Math.random()*e.length)]]="O"; render(); check(); active=true; }
+        }
+        function check() {
+            const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for(let s of w) if(board[s[0]] && board[s[0]]===board[s[1]] && board[s[0]]===board[s[2]]) { alert(board[s[0]]+" Kazandı!"); location.href="/"; return true; }
+            return false;
+        }
+    </script>
+</body></html>

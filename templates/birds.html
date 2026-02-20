@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Birds Pro</title>
+<style>
+    :root { --neon-blue: #00f2ff; --bg-dark: #050b18; }
+    body { background: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    
+    /* Geri Dön Butonu */
+    .top-bar { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
+    .back-btn { background: rgba(0, 242, 255, 0.1); border: 2px solid var(--neon-blue); color: var(--neon-blue); padding: 8px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; transition: 0.3s; box-shadow: 0 0 10px var(--neon-blue); }
+    .back-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+
+    canvas { border: 3px solid var(--neon-blue); background: #0a1122; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2); border-radius: 10px; max-width: 95vw; max-height: 80vh; }
+    .score-ui { position: absolute; top: 80px; font-size: 30px; font-weight: bold; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); pointer-events: none; }
+</style></head><body>
+
+    <div class="top-bar">
+        <a href="/" class="back-btn">⬅ MENÜYE DÖN</a>
+    </div>
+
+    <div class="score-ui" id="score">SKOR: 0</div>
+    <canvas id="birdGame"></canvas>
+
+    <script>
+        const canvas = document.getElementById('birdGame');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+
+        // Ekran boyutuna göre ayarla
+        canvas.width = 400;
+        canvas.height = 600;
+
+        // Oyun Değişkenleri
+        let bird = { x: 50, y: 150, w: 30, h: 30, gravity: 0.6, lift: -10, velocity: 0 };
+        let pipes = [];
+        let frame = 0;
+        let score = 0;
+        let gameActive = true;
+
+        // Boru oluşturma
+        function createPipe() {
+            let gap = 170;
+            let minHeight = 50;
+            let maxHeight = canvas.height - gap - minHeight;
+            let height = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+            pipes.push({ x: canvas.width, y: height, gap: gap, w: 60 });
+        }
+
+        function drawBird() {
+            ctx.fillStyle = "white";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00f2ff";
+            // Kanatlı basit neon kuş
+            ctx.fillRect(bird.x, bird.y, bird.w, bird.h);
+            ctx.strokeStyle = "#00f2ff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bird.x, bird.y, bird.w, bird.h);
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPipes() {
+            pipes.forEach(p => {
+                ctx.fillStyle = "rgba(0, 242, 255, 0.2)";
+                ctx.strokeStyle = "#00f2ff";
+                ctx.lineWidth = 3;
+
+                // Üst Boru
+                ctx.fillRect(p.x, 0, p.w, p.y);
+                ctx.strokeRect(p.x, 0, p.w, p.y);
+
+                // Alt Boru
+                ctx.fillRect(p.x, p.y + p.gap, p.w, canvas.height);
+                ctx.strokeRect(p.x, p.y + p.gap, p.w, canvas.height);
+
+                p.x -= 3;
+            });
+
+            if (pipes.length > 0 && pipes[0].x < -60) {
+                pipes.shift();
+                score++;
+                scoreEl.innerText = "SKOR: " + score;
+            }
+        }
+
+        function checkCollision() {
+            if (bird.y < 0 || bird.y + bird.h > canvas.height) return true;
+            
+            for (let p of pipes) {
+                if (bird.x + bird.w > p.x && bird.x < p.x + p.w) {
+                    if (bird.y < p.y || bird.y + bird.h > p.y + p.gap) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            if (frame % 90 === 0) createPipe();
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawPipes();
+            drawBird();
+
+            if (checkCollision()) {
+                gameActive = false;
+                setTimeout(() => {
+                    alert("OYUN BİTTİ! SKORUN: " + score);
+                    reset();
+                }, 100);
+            }
+
+            frame++;
+            requestAnimationFrame(update);
+        }
+
+        function reset() {
+            bird.y = 150;
+            bird.velocity = 0;
+            pipes = [];
+            score = 0;
+            frame = 0;
+            gameActive = true;
+            scoreEl.innerText = "SKOR: 0";
+            update();
+        }
+
+        // Kontroller
+        window.addEventListener('keydown', (e) => { if(e.code === 'Space') bird.velocity = bird.lift; });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); bird.velocity = bird.lift; });
+        canvas.addEventListener('mousedown', () => bird.velocity = bird.lift);
+
+        createPipe();
+        update();
+    </script>
+</body></html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+body{background:#050b18;color:white;text-align:center}
+canvas{border:2px solid #00f2ff}
+</style></head><body>
+<h2>PONG</h2>
+<canvas id="p" width="400" height="300"></canvas><br>
+<a href="/" style="color:#00f2ff">GERİ</a>
+<script>
+var c=document.getElementById("p"),x=c.getContext("2d"),bx=200,by=150,xv=3,yv=3,py=100;
+c.onmousemove=e=>py=e.clientY-c.offsetTop-40;
+function draw(){
+ bx+=xv;by+=yv;if(by<0||by>300)yv=-yv;
+ if(bx<0){if(by>py&&by<py+80)xv=-xv;else bx=200,by=150}
+ if(bx>400)xv=-xv;
+ x.fillStyle="#111a2e";x.fillRect(0,0,400,300);
+ x.fillStyle="#00f2ff";x.fillRect(0,py,10,80);
+ x.fillRect(bx,by,10,10);requestAnimationFrame(draw);
+}draw();
+</script></body></html>

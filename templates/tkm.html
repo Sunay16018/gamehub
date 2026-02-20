@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { background: #121212; color: white; text-align: center; font-family: 'Segoe UI', sans-serif; margin: 0; }
+    /* Üst Bar ve Geri Dön Butonu */
+    .header { background: #007bff; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .back-btn { color: white; text-decoration: none; font-weight: bold; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 10px; transition: 0.3s; }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    
+    /* Zorluk Seçim Ekranı */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+    .btn { padding: 15px 30px; margin: 10px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+    
+    /* Oyun Alanı */
+    .g-btn { font-size: 50px; background: #1e1e1e; border: 2px solid #00d2ff; border-radius: 20px; padding: 10px; margin: 10px; cursor: pointer; transition: 0.2s; }
+    .g-btn:active { transform: scale(0.9); background: #00d2ff; }
+    .stats { margin-top: 20px; font-size: 22px; color: #ffd700; font-weight: bold; }
+    .board { background: #1e1e1e; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; margin: 20px auto; border: 1px solid #333; }
+</style></head><body>
+
+    <div class="header">
+        <a href="/" class="back-btn">⬅ GERİ DÖN</a>
+        <span style="font-weight:bold; font-size:20px;">T.K.M</span>
+        <div style="width:70px;"></div> </div>
+
+    <div id="sel" class="overlay">
+        <h2>Zorluk Seç ve Başla</h2>
+        <button class="btn" style="background: #2ecc71; color: white;" onclick="start('easy')">😊 NORMAL (Rastgele)</button>
+        <button class="btn" style="background: #e74c3c; color: white;" onclick="start('hard')">💀 ZOR (AI Analiz)</button>
+    </div>
+
+    <div id="game" style="display:none; padding-top: 20px;">
+        <div class="stats" id="streak">🔥 SERİ: 0</div>
+        <div id="mode-info" style="color: #888; margin-bottom: 15px;"></div>
+        
+        <div class="btns">
+            <button class="g-btn" onclick="play('🪨')">🪨</button>
+            <button class="g-btn" onclick="play('📄')">📄</button>
+            <button class="g-btn" onclick="play('✂️')">✂️</button>
+        </div>
+
+        <div class="board">
+            <div id="choices" style="color:#aaa; font-size:18px; margin-bottom: 10px;">Hamleni seç!</div>
+            <div id="result" style="font-size:24px; font-weight:bold;"></div>
+        </div>
+
+        <button class="btn" style="background:#555; color:white;" onclick="location.reload()">Yeniden Oyna / Mod Değiştir</button>
+    </div>
+
+    <script>
+        let diff='', streak=0, history={'🪨':0,'📄':0,'✂️':0};
+        
+        function start(d){ 
+            diff=d; 
+            document.getElementById('sel').style.display='none'; 
+            document.getElementById('game').style.display='block';
+            document.getElementById('mode-info').innerText = "Mod: " + (d==='hard' ? "ZOR" : "NORMAL");
+        }
+
+        function play(player){
+            const options = ['🪨','📄','✂️'];
+            let bot;
+
+            if(diff==='easy') {
+                bot = options[Math.floor(Math.random()*3)];
+            } else {
+                // AI MODU: En çok seçtiğin şeyi yenecek olanı hesapla
+                let mostFreq = '🪨';
+                if(history['📄'] > history[mostFreq]) mostFreq = '📄';
+                if(history['✂️'] > history[mostFreq]) mostFreq = '✂️';
+                
+                bot = (mostFreq === '🪨') ? '📄' : (mostFreq === '📄' ? '✂️' : '🪨');
+                // AI %20 ihtimalle şaşırtsın (yoksa hep aynı döngüye girer)
+                if(Math.random() < 0.2) bot = options[Math.floor(Math.random()*3)];
+            }
+
+            history[player]++; // Hamleni hafızaya al
+            
+            let resMsg = "";
+            let resColor = "";
+
+            if(player === bot) {
+                resMsg = "BERABERE! 🤝";
+                resColor = "#ff9f43";
+            } else if(
+                (player === '🪨' && bot === '✂️') || 
+                (player === '📄' && bot === '🪨') || 
+                (player === '✂️' && bot === '📄')
+            ) {
+                resMsg = "KAZANDIN! 🎉";
+                resColor = "#00ff00";
+                streak++;
+            } else {
+                resMsg = "KAYBETTİN! 🤖";
+                resColor = "#ff4757";
+                streak = 0;
+            }
+
+            document.getElementById('streak').innerText = "🔥 SERİ: " + streak;
+            document.getElementById('choices').innerText = `Sen: ${player} | Bot: ${bot}`;
+            let resDiv = document.getElementById('result');
+            resDiv.innerText = resMsg;
+            resDiv.style.color = resColor;
+        }
+    </script>
+</body></html>

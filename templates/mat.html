@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { background: #121212; color: white; text-align: center; font-family: sans-serif; margin: 0; }
+    .header { background: #007bff; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+    .back-btn { color: white; text-decoration: none; font-weight: bold; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 10px; }
+    .game-box { background: #1e1e1e; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px; margin: 50px auto; border: 1px solid #007bff; }
+    input { width: 80%; padding: 10px; margin: 10px; border-radius: 10px; border: none; font-size: 18px; }
+    .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+</style></head><body>
+    <div class="header">
+        <a href="/" class="back-btn">⬅ GERİ DÖN</a>
+        <span style="font-weight:bold;">MATEMATİK</span>
+        <div style="width:70px;"></div>
+    </div>
+    <div class="game-box">
+        <h2 id="quest">Hazır mısın?</h2>
+        <input type="number" id="ans" placeholder="Cevabın...">
+        <br>
+        <button class="btn" onclick="check()">KONTROL ET</button>
+        <p id="msg" style="margin-top:20px; font-weight:bold;"></p>
+        <p id="score" style="color: #ffd700;">Skor: 0</p>
+    </div>
+    <script>
+        let a, b, score=0;
+        function newQ(){
+            a = Math.floor(Math.random()*20)+1;
+            b = Math.floor(Math.random()*20)+1;
+            document.getElementById('quest').innerText = `${a} + ${b} = ?`;
+            document.getElementById('ans').value = '';
+        }
+        function check(){
+            let u = document.getElementById('ans').value;
+            if(u == (a+b)){
+                score++;
+                document.getElementById('msg').innerText = "DOĞRU! ✅";
+                document.getElementById('msg').style.color = "#00ff00";
+            } else {
+                score = 0;
+                document.getElementById('msg').innerText = "YANLIŞ! ❌";
+                document.getElementById('msg').style.color = "#ff4757";
+            }
+            document.getElementById('score').innerText = "Skor: " + score;
+            newQ();
+        }
+        newQ();
+    </script>
+</body></html>

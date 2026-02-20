@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root { --neon: #00f2ff; --bg: #050b18; --card: #111a2e; }
+    body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
+    .nav { background: var(--card); padding: 15px; display: flex; justify-content: space-between; border-bottom: 2px solid var(--neon); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; padding: 20px; }
+    .card { background: var(--card); padding: 15px; border-radius: 12px; text-decoration: none; color: white; border: 1px solid #1e293b; font-size: 12px; font-weight: bold; }
+    .card i { font-size: 30px; display: block; margin-bottom: 5px; font-style: normal; }
+    .card:hover { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
+</style></head><body>
+    <div class="nav">
+        <span><img src="{{ user.picture }}" width="25" style="border-radius:50%"> {{ user.name }}</span>
+        <a href="/logout" style="color:#ff00ff; text-decoration:none">ÇIKIŞ</a>
+    </div>
+    <h2 style="color:var(--neon)">GAMEHUB v2</h2>
+    <div class="grid">
+        <a href="/chat" class="card" style="border-color:#ff00ff"><i>💬</i>SOHBET</a>
+        <a href="/game/xox" class="card"><i>❌</i>XOX</a>
+        <a href="/game/birds" class="card"><i>🐦</i>BIRDS</a>
+        <a href="/game/snake" class="card"><i>🐍</i>SNAKE</a>
+        <a href="/game/tahmin" class="card"><i>🔢</i>TAHMİN</a>
+        <a href="/game/hafiza" class="card"><i>🧠</i>HAFIZA</a>
+        <a href="/game/mat" class="card"><i>➕</i>MAT</a>
+        <a href="/game/tikla" class="card"><i>🖱️</i>TIKLA</a>
+        <a href="/game/mayin" class="card"><i>💣</i>MAYIN</a>
+        <a href="/game/tkm" class="card"><i>✊</i>TKM</a>
+        <a href="/game/kelime" class="card"><i>📝</i>KELİME</a>
+        <a href="/game/renk" class="card"><i>🎨</i>RENK</a>
+        <a href="/game/yazi" class="card"><i>⌨️</i>YAZI</a>
+    </div>
+</body></html>

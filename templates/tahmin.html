@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; }
+    .nav { background: #00d2ff; padding: 15px; color: black; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .nav a { color: black; text-decoration: none; background: rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 10px; }
+    .card { background: #1e1e1e; margin: 40px auto; width: 85%; max-width: 400px; padding: 30px; border-radius: 20px; border: 2px solid #00d2ff; }
+    input { width: 80%; padding: 15px; border-radius: 10px; border: none; font-size: 20px; text-align: center; margin-bottom: 20px; background: #333; color: white; outline: none; }
+    button { width: 85%; padding: 15px; background: #00d2ff; color: black; font-weight: bold; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
+</style></head><body>
+    <div class="nav"><a href="/">⬅</a> <span>Sayı Tahmini</span> <span></span></div>
+    <div class="card">
+        <p>1 ile 100 arasında bir sayı tuttum.</p>
+        <input type="number" id="inp" placeholder="Tahminin">
+        <button onclick="check()">KONTROL ET</button>
+        <button onclick="reset()" style="background:#555; color:white;">YENİ SAYI TUT</button>
+        <h2 id="msg" style="margin-top:20px;"></h2>
+    </div>
+    <script>
+        let t;
+        function reset(){ t=Math.floor(Math.random()*100)+1; document.getElementById('msg').innerHTML="Yeni sayı hazır!"; document.getElementById('msg').style.color="white"; }
+        function check(){
+            let v=document.getElementById('inp').value; let m=document.getElementById('msg');
+            if(v==t){ m.innerHTML="🎉 BİLDİN!"; m.style.color="#00ff00"; }
+            else{ m.innerHTML=v<t?"Daha YÜKSEK ⬆️":"Daha DÜŞÜK ⬇️"; m.style.color="#ff4757"; }
+        }
+        reset();
+    </script>
+</body></html>

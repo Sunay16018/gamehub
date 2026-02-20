@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; }
+    .nav { background: #3498db; padding: 15px; color: white; font-weight: bold; font-size: 20px; display: flex; justify-content: space-between; }
+    .nav a { color: white; text-decoration: none; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 70px); gap: 10px; justify-content: center; margin-top: 30px; }
+    .card { width: 70px; height: 70px; background: #3498db; border-radius: 10px; cursor: pointer; font-size: 35px; display: flex; align-items: center; justify-content: center; color: transparent; transition: 0.3s; }
+    .card.open { background: #1e1e1e; color: white; border: 2px solid #3498db; }
+</style></head><body>
+    <div class="nav"><a href="/">⬅</a> <span>Hafıza</span> <span></span></div>
+    <h3 id="msg" style="margin-top:20px;">Eşleri Bul!</h3>
+    <div class="grid" id="bd"></div>
+    <script>
+        let em=["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼"], crd=[...em,...em].sort(()=>Math.random()-0.5);
+        let bd=document.getElementById('bd'), op=[], mt=0, lk=false;
+        crd.forEach((e,i)=>{
+            let c=document.createElement('div'); c.className="card"; c.innerText=e;
+            c.onclick=()=>{
+                if(lk || c.classList.contains("open")) return;
+                c.classList.add("open"); op.push(c);
+                if(op.length===2){
+                    lk=true;
+                    if(op[0].innerText===op[1].innerText){ mt++; op=[]; lk=false; if(mt===8) document.getElementById('msg').innerText="TEBRİKLER! 🎉"; }
+                    else{ setTimeout(()=>{ op[0].classList.remove("open"); op[1].classList.remove("open"); op=[]; lk=false; }, 800); }
+                }
+            }; bd.appendChild(c);
+        });
+    </script>
+</body></html>
