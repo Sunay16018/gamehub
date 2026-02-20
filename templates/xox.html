@@ -1,47 +1,170 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-<style>
-    body { background: #050b18; color: white; text-align: center; font-family: sans-serif; }
-    .board { display: none; grid-template-columns: repeat(3, 80px); gap: 5px; justify-content: center; margin-top: 20px; }
-    .cell { width: 80px; height: 80px; background: #111a2e; border: 2px solid #00f2ff; font-size: 30px; display: flex; align-items: center; justify-content: center; }
-    .btn { background: #00f2ff; border: none; padding: 10px 20px; margin: 10px; font-weight: bold; cursor: pointer; }
-</style></head><body>
-    <div id="menu">
-        <h3>XOX MODU</h3>
-        <button class="btn" onclick="start(false)">TEK KİŞİLİK</button>
-        <button class="btn" onclick="start(true)">İKİ KİŞİLİK (ONLINE)</button>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon XOX Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        :root { --neon: #00f2ff; --pink: #ff00ff; --bg: #050b18; --card: #111a2e; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: var(--bg); color: white; font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* Geri Tuşu */
+        .back-nav { position: absolute; top: 20px; left: 20px; z-index: 100; }
+        .back-link { 
+            color: var(--neon); text-decoration: none; font-size: 24px; 
+            background: rgba(0, 242, 255, 0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid var(--neon);
+        }
+
+        /* Modern Menü UI */
+        .menu-container { text-align: center; width: 90%; max-width: 400px; animation: fadeIn 0.5s; }
+        h1 { font-size: 2.5rem; text-shadow: 0 0 15px var(--neon); color: var(--neon); margin-bottom: 30px; }
+        .mode-card {
+            background: var(--card); border: 2px solid #1e293b; border-radius: 20px;
+            padding: 25px; margin-bottom: 20px; transition: 0.3s; cursor: pointer;
+        }
+        .mode-card:active { transform: scale(0.95); border-color: var(--neon); box-shadow: 0 0 20px rgba(0,242,255,0.3); }
+        .mode-card i { font-size: 40px; display: block; margin-bottom: 10px; font-style: normal; }
+        .mode-card span { font-weight: bold; font-size: 18px; color: #cbd5e1; }
+
+        /* Oyun Alanı */
+        .game-area { display: none; flex-direction: column; align-items: center; width: 100%; }
+        .status-badge { 
+            background: var(--card); border: 1px solid var(--pink); padding: 10px 25px;
+            border-radius: 50px; margin-bottom: 20px; color: var(--pink); font-weight: bold;
+            box-shadow: 0 0 10px rgba(255,0,255,0.2);
+        }
+        .board { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
+            width: 90vw; max-width: 350px; aspect-ratio: 1/1;
+        }
+        .cell {
+            background: var(--card); border: 2px solid #1e293b; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 45px; font-weight: 900; transition: 0.2s;
+        }
+        .cell.x { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        .cell.o { color: var(--pink); text-shadow: 0 0 10px var(--pink); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="back-nav">
+        <a href="/" class="back-link">←</a>
     </div>
-    <div id="status"></div>
-    <div id="board" class="board"></div>
+
+    <div id="menu" class="menu-container">
+        <h1>NEON XOX</h1>
+        <div class="mode-card" onclick="start(false)">
+            <i>👤</i><span>Tek Kişilik (Bot)</span>
+        </div>
+        <div class="mode-card" onclick="start(true)">
+            <i>🌐</i><span>Online Düello</span>
+        </div>
+    </div>
+
+    <div id="game" class="game-area">
+        <div id="status" class="status-badge">SIRA SENDE</div>
+        <div id="board" class="board"></div>
+    </div>
+
     <script>
-        const socket = io(); let board = ["","","","","","","","",""]; 
+        const socket = io();
+        let board = ["","","","","","","","",""];
         let mySym = "X", turn = "X", isMulti = false, active = false;
+
         function start(multi) {
-            isMulti = multi; document.getElementById('menu').style.display='none';
-            if(multi) { socket.emit('join_xox', {username: "{{username}}"}); document.getElementById('status').innerText="Bekleniyor (1/2)..."; }
-            else { active=true; document.getElementById('board').style.display='grid'; render(); }
+            isMulti = multi;
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'flex';
+            
+            if(multi) {
+                document.getElementById('status').innerText = "Oyuncu Bekleniyor... (1/2)";
+                socket.emit('join_xox', {user: "{{username}}"});
+            } else {
+                active = true;
+                render();
+            }
         }
-        socket.on('start_multiplayer', () => { active=true; document.getElementById('board').style.display='grid'; render(); });
+
+        // Render'dan gelen oyuncu sayısı güncellemesi
+        socket.on('player_update', (data) => {
+            if(data.count >= 2) {
+                document.getElementById('status').innerText = "RAKİP BULUNDU! X Başlar";
+                active = true;
+                render();
+            }
+        });
+
+        socket.on('receive_move', (d) => {
+            board[d.index] = d.symbol;
+            turn = d.symbol === "X" ? "O" : "X";
+            active = true;
+            document.getElementById('status').innerText = "SIRA SENDE";
+            render();
+            check();
+        });
+
         function render() {
-            const b = document.getElementById('board'); b.innerHTML = "";
-            board.forEach((v, i) => { const c = document.createElement('div'); c.className='cell'; c.innerText=v; c.onclick=()=>move(i); b.appendChild(c); });
+            const b = document.getElementById('board');
+            b.innerHTML = "";
+            board.forEach((v, i) => {
+                const c = document.createElement('div');
+                c.className = `cell ${v.toLowerCase()}`;
+                c.innerText = v;
+                c.onclick = () => move(i);
+                b.appendChild(c);
+            });
         }
+
         function move(i) {
-            if(!active || board[i]!="") return;
-            board[i] = turn; render(); if(check()) return;
-            if(isMulti) { socket.emit('xox_move', {index:i, symbol:turn}); active=false; }
-            else { active=false; setTimeout(bot, 500); }
+            if(!active || board[i] !== "") return;
+            board[i] = turn;
+            render();
+            if(check()) return;
+
+            if(isMulti) {
+                socket.emit('xox_move', {index: i, symbol: turn});
+                active = false;
+                document.getElementById('status').innerText = "RAKİP DÜŞÜNÜYOR...";
+            } else {
+                active = false;
+                document.getElementById('status').innerText = "BOT DÜŞÜNÜYOR...";
+                setTimeout(bot, 600);
+            }
         }
-        socket.on('receive_move', (d) => { board[d.index]=d.symbol; turn=d.symbol==="X"?"O":"X"; active=true; render(); check(); });
-        function bot() { 
-            let e = board.map((v,i)=>v===""?i:null).filter(v=>v!==null);
-            if(e.length>0) { board[e[Math.floor(Math.random()*e.length)]]="O"; render(); check(); active=true; }
+
+        function bot() {
+            let empty = board.map((v,i) => v === "" ? i : null).filter(v => v !== null);
+            if(empty.length > 0) {
+                let moveIdx = empty[Math.floor(Math.random() * empty.length)];
+                board[moveIdx] = "O";
+                render();
+                check();
+                active = true;
+                document.getElementById('status').innerText = "SIRA SENDE";
+            }
         }
+
         function check() {
-            const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            for(let s of w) if(board[s[0]] && board[s[0]]===board[s[1]] && board[s[0]]===board[s[2]]) { alert(board[s[0]]+" Kazandı!"); location.href="/"; return true; }
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for(let s of wins) {
+                if(board[s[0]] && board[s[0]] === board[s[1]] && board[s[0]] === board[s[2]]) {
+                    alert("OYUN BİTTİ: " + board[s[0]] + " KAZANDI!");
+                    location.reload();
+                    return true;
+                }
+            }
+            if(!board.includes("")) { alert("BERABERE!"); location.reload(); return true; }
             return false;
         }
     </script>
-</body></html>
+</body>
+</html>
