@@ -4,7 +4,8 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gizlisifre123'
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Bu kısım bağlantı kopmalarını ve oda sorunlarını engeller
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=60)
 
 xox_rooms = {}
 
@@ -29,13 +30,11 @@ def game(game_name):
 
 @socketio.on('join_xox')
 def on_join(data):
-    username = data['user']
     room = "xox_global_room"
     join_room(room)
     if room not in xox_rooms:
-        xox_rooms[room] = []
-    if username not in xox_rooms[room]:
-        xox_rooms[room].append(username)
+        xox_rooms[room] = set() # Tekrarı önlemek için set kullanıyoruz
+    xox_rooms[room].add(request.sid) # Kişiyi benzersiz ID ile ekle
     emit('player_update', {'count': len(xox_rooms[room])}, room=room)
 
 @socketio.on('xox_move')
@@ -44,10 +43,18 @@ def handle_move(data):
 
 @socketio.on('send_message')
 def handle_message(data):
+    # Mesajı gönderen dahil herkese yayınla (broadcast)
     emit('receive_message', {
         'user': session.get('username', 'Misafir'),
         'msg': data['msg']
     }, broadcast=True)
+
+@socketio.on('disconnect')
+def on_disconnect():
+    room = "xox_global_room"
+    if room in xox_rooms and request.sid in xox_rooms[room]:
+        xox_rooms[room].remove(request.sid)
+        emit('player_update', {'count': len(xox_rooms[room])}, room=room)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
