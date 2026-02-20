@@ -1,46 +1,51 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<style>
-    body { background: #0b141a; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-    .header { background: #202c33; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-    #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-    .msg { background: #202c33; padding: 10px; border-radius: 12px; max-width: 85%; }
-    .msg img { width: 22px; height: 22px; border-radius: 50%; vertical-align: middle; margin-right: 5px; }
-    .input-area { background: #202c33; padding: 12px; display: flex; gap: 10px; }
-    input { flex: 1; background: #2a3942; border: none; padding: 12px; border-radius: 20px; color: white; outline: none; }
-    button { background: #10b981; border: none; color: white; width: 45px; height: 45px; border-radius: 50%; }
-</style></head><body>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sohbet Odası</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { background: #050b18; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .header { padding: 15px; background: #111a2e; border-bottom: 1px solid #00f2ff; display: flex; align-items: center; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 80%; width: fit-content; align-self: flex-start; }
+        .msg b { color: #00f2ff; display: block; font-size: 12px; margin-bottom: 4px; }
+        .input-area { padding: 20px; background: #111a2e; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #1e293b; color: white; outline: none; }
+        button { background: #00f2ff; color: #050b18; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
     <div class="header">
-        <a href="/" style="color:#10b981; text-decoration:none;">⬅ MENÜ</a>
-        <div style="font-weight:bold;">GENEL SOHBET</div>
-        <img src="{{ user.picture }}" style="width:30px; height:30px; border-radius:50%;">
+        <a href="/" style="color: #00f2ff; text-decoration: none; margin-right: 15px; font-size: 20px;">←</a>
+        <span>Global Sohbet</span>
     </div>
     <div id="chat-box"></div>
     <div class="input-area">
-        <input type="text" id="msg-input" placeholder="Mesaj yaz...">
-        <button onclick="send()">➤</button>
+        <input type="text" id="msgInput" placeholder="Mesaj yazın..." autocomplete="off">
+        <button onclick="send()">Gönder</button>
     </div>
     <script>
         const socket = io();
-        socket.on('connect', () => socket.emit('get_history'));
-        socket.on('history', (msgs) => { msgs.forEach(m => addMsg(m)); });
-        socket.on('receive_message', (data) => addMsg(data));
+        const box = document.getElementById('chat-box');
         function send() {
-            const inp = document.getElementById('msg-input');
-            if(inp.value.trim()) {
-                socket.emit('send_message', { name: "{{user.name}}", text: inp.value, img: "{{user.picture}}" });
-                inp.value = "";
+            const input = document.getElementById('msgInput');
+            if(input.value.trim() !== "") {
+                socket.emit('send_message', {msg: input.value});
+                input.value = "";
             }
         }
-        function addMsg(data) {
-            const box = document.getElementById('chat-box');
+        socket.on('receive_message', (data) => {
             const div = document.createElement('div');
-            div.className = "msg";
-            div.innerHTML = `<img src="${data.img}"><b>${data.name}:</b> ${data.text}`;
+            div.className = 'msg';
+            div.innerHTML = `<b>${data.user}</b> ${data.msg}`;
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
-        }
-        document.getElementById('msg-input').onkeypress = (e) => { if(e.key === 'Enter') send(); };
+        });
+        document.getElementById('msgInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') send();
+        });
     </script>
-</body></html>
+</body>
+</html>
