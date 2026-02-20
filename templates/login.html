@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap</title>
+    <title>Giriş - GameHub</title>
     <style>
-        body { background: #050b18; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: #111a2e; padding: 40px; border-radius: 20px; border: 1px solid #00f2ff; text-align: center; width: 80%; max-width: 300px; }
-        input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 10px; border: none; background: #1e293b; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #00f2ff; color: #050b18; font-weight: bold; cursor: pointer; }
+        :root { --neon: #00f2ff; --bg: #050b18; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #111a2e; padding: 40px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 20px rgba(0,242,255,0.2); width: 85%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #1e293b; background: #1e293b; color: white; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--neon); }
+        button { width: 100%; padding: 12px; margin-top: 20px; border-radius: 10px; border: none; background: var(--neon); color: #050b18; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { box-shadow: 0 0 15px var(--neon); }
+        .error { color: #ff0055; font-size: 14px; margin-top: 10px; }
+        a { color: var(--neon); text-decoration: none; font-size: 14px; display: block; margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h2>HOŞ GELDİN</h2>
+    <div class="card">
+        <h2 style="color: var(--neon); margin-bottom: 30px;">Giriş Yap</h2>
         <form action="/login" method="POST">
             <input type="text" name="username" placeholder="Kullanıcı Adı" required>
-            <button type="submit">BAŞLA</button>
+            <input type="password" name="password" placeholder="Şifre" required>
+            <button type="submit">GİRİŞ YAP</button>
+            {% if error %}<div class="error">{{ error }}</div>{% endif %}
         </form>
+        <a href="/register">Hesabın yok mu? Kayıt Ol</a>
     </div>
 </body>
 </html>
