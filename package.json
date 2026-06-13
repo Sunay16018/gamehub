@@ -1,7 +1,7 @@
 {
   "name": "gamehub",
   "version": "1.0.0",
-  "description": "20 Online Games with MongoDB Atlas",
+  "description": "20 Online Games with MongoDB Atlas + Hugging Face Storage",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,7 +15,10 @@
     "jsonwebtoken": "^9.0.2",
     "uuid": "^10.0.0",
     "dotenv": "^16.4.5",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "axios": "^1.7.0",
+    "form-data": "^4.0.0",
+    "express-fileupload": "^1.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
