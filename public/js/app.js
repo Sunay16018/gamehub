@@ -394,4 +394,105 @@ document.addEventListener('DOMContentLoaded', () => {
       else logout();
     });
   }
+  // ===== AVATAR UPLOAD - Cihazdan dosya seç =====
+
+function showAvatarUploadModal() {
+    if (!state.user || state.isGuest) {
+        alert('Avatar yüklemek için giriş yapmalısınız');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'avatarUploadModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:400px;">
+            <h2 style="font-family:Orbitron;text-align:center;margin-bottom:20px;">
+                <i class="fas fa-camera"></i> Avatar Yükle
+            </h2>
+            <div style="text-align:center;margin-bottom:20px;">
+                <img id="previewAvatar" src="${state.user.avatar}" style="width:120px;height:120px;border-radius:50%;border:3px solid #00d4ff;">
+            </div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="previewAvatarFile(this)">
+            <button onclick="document.getElementById('avatarFileInput').click()" class="btn-primary" style="margin-bottom:10px;">
+                <i class="fas fa-folder-open"></i> Dosya Seç
+            </button>
+            <p id="selectedFileName" style="color:#888;font-size:0.9rem;text-align:center;margin-bottom:15px;">Dosya seçilmedi</p>
+            <button onclick="uploadAvatarFile()" id="uploadAvatarBtn" class="btn-primary" disabled>
+                <i class="fas fa-cloud-upload-alt"></i> Yükle
+            </button>
+            <button onclick="closeAvatarUploadModal()" style="margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px;border-radius:10px;cursor:pointer;">
+                İptal
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function previewAvatarFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('previewAvatar').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    document.getElementById('selectedFileName').textContent = file.name;
+    document.getElementById('uploadAvatarBtn').disabled = false;
+}
+
+async function uploadAvatarFile() {
+    const fileInput = document.getElementById('avatarFileInput');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const btn = document.getElementById('uploadAvatarBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yükleniyor...';
+    btn.disabled = true;
+    
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('userId', state.user._id);
+        formData.append('username', state.user.username);
+        
+        const res = await fetch('/api/upload/avatar', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + state.token
+            },
+            body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            state.user.avatar = data.avatar;
+            document.getElementById('userAvatar').src = data.avatar;
+            closeAvatarUploadModal();
+            showMessage('Avatar güncellendi!', '#22c55e');
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (err) {
+        alert('Yükleme hatası: ' + err.message);
+        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Yükle';
+        btn.disabled = false;
+    }
+}
+
+function closeAvatarUploadModal() {
+    const modal = document.getElementById('avatarUploadModal');
+    if (modal) modal.remove();
+}
+
+function showMessage(text, color) {
+    const msg = document.createElement('div');
+    msg.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);padding:15px 30px;border-radius:10px;z-index:10000;border:2px solid ${color};color:${color};font-weight:600;`;
+    msg.textContent = text;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+      }
 });
