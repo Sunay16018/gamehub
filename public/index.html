@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameHub - 20 Online Oyun</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal active">
+      <div class="modal-content auth-box">
+        <div class="auth-tabs">
+          <button class="tab-btn active" onclick="showTab('login')">Giriş</button>
+          <button class="tab-btn" onclick="showTab('register')">Kayıt</button>
+        </div>
+        <div id="loginTab" class="tab-content active">
+          <h2><i class="fas fa-gamepad"></i> GameHub</h2>
+          <input type="email" id="loginEmail" placeholder="Email" required>
+          <input type="password" id="loginPassword" placeholder="Şifre" required>
+          <button onclick="login()" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
+          <p class="guest-link" onclick="playAsGuest()">Misafir olarak oyna</p>
+        </div>
+        <div id="registerTab" class="tab-content">
+          <h2><i class="fas fa-user-plus"></i> Kayıt Ol</h2>
+          <input type="text" id="regUsername" placeholder="Kullanıcı Adı" required minlength="3" maxlength="20">
+          <input type="email" id="regEmail" placeholder="Email" required>
+          <input type="password" id="regPassword" placeholder="Şifre" required minlength="6">
+          <button onclick="register()" class="btn-primary"><i class="fas fa-user-plus"></i> Kayıt Ol</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+      <!-- Header -->
+      <header class="main-header">
+        <div class="logo"><i class="fas fa-gamepad"></i> GameHub</div>
+        <div class="user-bar">
+          <div class="coins"><i class="fas fa-coins"></i> <span id="userCoins">1000</span></div>
+          <div class="level">Lv.<span id="userLevel">1</span></div>
+          <img id="userAvatar" src="" alt="Avatar" class="avatar">
+          <span id="userName">Misafir</span>
+          <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </header>
+
+      <!-- Navigation -->
+      <nav class="game-nav">
+        <button class="nav-btn active" onclick="filterGames('all')">Tümü</button>
+        <button class="nav-btn" onclick="filterGames('action')">Aksiyon</button>
+        <button class="nav-btn" onclick="filterGames('puzzle')">Puzzle</button>
+        <button class="nav-btn" onclick="filterGames('strategy')">Strateji</button>
+        <button class="nav-btn" onclick="filterGames('multiplayer')">Çok Oyunculu</button>
+        <button class="nav-btn" onclick="filterGames('classic')">Klasik</button>
+      </nav>
+
+      <!-- Games Grid -->
+      <main class="games-grid" id="gamesGrid"></main>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="modal">
+      <div class="modal-content game-modal-content">
+        <div class="game-header">
+          <h2 id="gameTitle">Oyun</h2>
+          <button onclick="closeGame()" class="btn-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="gameContainer"></div>
+        <div class="game-controls">
+          <button onclick="restartGame()" class="btn-restart"><i class="fas fa-redo"></i> Yeniden Başla</button>
+          <button onclick="showLeaderboard()" class="btn-leaderboard"><i class="fas fa-trophy"></i> Lider Tablosu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+      <div class="modal-content leaderboard-content">
+        <h2><i class="fas fa-trophy"></i> Lider Tablosu</h2>
+        <div id="leaderboardList"></div>
+        <button onclick="closeLeaderboard()" class="btn-close-modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
