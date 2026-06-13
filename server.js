@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
+// Routes - BUNLAR STATIC'DEN SONRA OLMALI
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 
@@ -39,6 +39,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
+// 404 handler - EN SONDA
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   await closeDB();
@@ -50,9 +55,20 @@ process.on('SIGINT', async () => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, async () => {
-  await connectDB();
-  console.log(`GameHub server running on port ${PORT}`);
-});
+
+// DB bağlantısı BURADA başlamalı
+async function startServer() {
+  try {
+    await connectDB();
+    server.listen(PORT, () => {
+      console.log(`GameHub server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Server start failed:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = { io };
