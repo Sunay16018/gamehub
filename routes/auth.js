@@ -2,7 +2,10 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { getDB } = require('../db');
 const { generateToken } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
   try {
@@ -13,7 +16,7 @@ router.post('/register', async (req, res) => {
     const db = getDB();
     const existing = await db.collection('users').findOne({ $or: [{ email }, { username }] });
     if (existing) return res.status(400).json({ error: 'Email veya kullanıcı adı zaten kullanımda' });
-
+    
     const hashed = await bcrypt.hash(password, 12);
     const user = {
       username, email, password: hashed,
@@ -52,8 +55,7 @@ router.get('/profile', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Token gerekli' });
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'GameHubSuperSecretKey2026!@#$%');
+    const decoded = jwt.verify(token, JWT_SECRET);
     const db = getDB();
     const user = await db.collection('users').findOne({ _id: decoded.userId });
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
