@@ -3,11 +3,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 require('dotenv').config();
 
 const { connectDB, closeDB } = require('./db');
 const authRoutes = require('./routes/auth');
 const gameRoutes = require('./routes/games');
+const uploadRoutes = require('./routes/upload'); // YENİ
 const { setupSocketHandlers } = require('./socket/handlers');
 const { setupGameRooms } = require('./socket/gamerooms');
 
@@ -23,11 +25,16 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+  abortOnLimit: true
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes - BUNLAR STATIC'DEN SONRA OLMALI
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/upload', uploadRoutes); // YENİ
 
 // Socket.IO setup
 setupSocketHandlers(io);
@@ -39,7 +46,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// 404 handler - EN SONDA
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
@@ -56,7 +63,6 @@ process.on('SIGINT', async () => {
 
 const PORT = process.env.PORT || 3000;
 
-// DB bağlantısı BURADA başlamalı
 async function startServer() {
   try {
     await connectDB();
