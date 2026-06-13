@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
+  console.error('JWT_SECRET environment variable is required');
+  process.exit(1);
 }
 
 async function authenticate(req, res, next) {
