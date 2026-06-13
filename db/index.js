@@ -1,6 +1,10 @@
 const { MongoClient } = require('mongodb');
 
-const uri = process.env.MONGODB_URI || 'mongodb+srv://gamehub_db:CWmSXKoobAcJ9WbO@gamehub.7srsfqc.mongodb.net/gamehub?retryWrites=true&w=majority&appName=Gamehub';
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  throw new Error('MONGODB_URI environment variable is required');
+}
 
 const client = new MongoClient(uri, {
   maxPoolSize: 50,
@@ -16,14 +20,14 @@ async function connectDB() {
     await client.connect();
     db = client.db('gamehub');
     console.log('MongoDB Atlas bağlantısı başarılı');
-
+    
     await db.collection('users').createIndex({ email: 1 }, { unique: true });
     await db.collection('users').createIndex({ username: 1 }, { unique: true });
     await db.collection('scores').createIndex({ userId: 1, gameId: 1 });
     await db.collection('scores').createIndex({ gameId: 1, score: -1 });
     await db.collection('rooms').createIndex({ gameId: 1, status: 1 });
     await db.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 });
-
+    
     return db;
   } catch (err) {
     console.error('MongoDB bağlantı hatası:', err.message);
