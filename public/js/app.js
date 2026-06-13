@@ -26,25 +26,145 @@ function showTab(tab) {
   document.getElementById(tab + 'Tab').classList.add('active');
 }
 
+// ===== AVATAR SEÇİM =====
+let selectedAvatarStyle = 0;
+
+function showAvatarPicker() {
+  if (!state.user) return;
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.id = 'avatarModal';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:500px;">
+      <h2 style="font-family:Orbitron;text-align:center;margin-bottom:20px;">
+        <i class="fas fa-user-circle"></i> Avatar Seç
+      </h2>
+      <div id="avatarGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-bottom:20px;"></div>
+      <button onclick="closeAvatarModal()" class="btn-primary">Kapat</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  loadAvatars();
+}
+
+async function loadAvatars() {
+  try {
+    const res = await fetch('/api/auth/avatars');
+    const avatars = await res.json();
+    
+    const grid = document.getElementById('avatarGrid');
+    grid.innerHTML = avatars.map(a => `
+      <div onclick="selectAvatar(${a.style})" style="
+        cursor:pointer;border-radius:15px;padding:10px;
+        border:3px solid ${a.style === (state.user?.avatarStyle || 0) ? '#00d4ff' : 'transparent'};
+        background:rgba(255,255,255,0.05);transition:all 0.3s;
+        text-align:center;
+      " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        <img src="${a.preview}" style="width:60px;height:60px;border-radius:50%;">
+        <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">${a.name}</p>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Avatar load error:', err);
+  }
+}
+
+async function selectAvatar(style) {
+  if (!state.token) return;
+  
+  try {
+    const res = await fetch('/api/auth/avatar', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + state.token
+      },
+      body: JSON.stringify({ avatarStyle: style })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      state.user.avatar = data.avatar;
+      state.user.avatarStyle = data.avatarStyle;
+      document.getElementById('userAvatar').src = data.avatar;
+      closeAvatarModal();
+    }
+  } catch (err) {
+    console.error('Avatar select error:', err);
+  }
+}
+
+function closeAvatarModal() {
+  const modal = document.getElementById('avatarModal');
+  if (modal) modal.remove();
+}
+
+// ===== KAYIT - Avatar seçimli =====
 async function register() {
   const username = document.getElementById('regUsername').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
-
+  
   if (!username || !email || !password) return alert('Tüm alanları doldurun');
   if (password.length < 6) return alert('Şifre en az 6 karakter olmalı');
+  
+  showRegisterAvatarPicker(username, email, password);
+}
 
+function showRegisterAvatarPicker(username, email, password) {
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.id = 'regAvatarModal';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:500px;">
+      <h2 style="font-family:Orbitron;text-align:center;margin-bottom:20px;">
+        <i class="fas fa-user-circle"></i> Avatar Seç
+      </h2>
+      <div id="regAvatarGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-bottom:20px;"></div>
+      <button onclick="completeRegister('${username}', '${email}', '${password}')" class="btn-primary">Kayıt Ol</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  fetch('/api/auth/avatars')
+    .then(r => r.json())
+    .then(avatars => {
+      const grid = document.getElementById('regAvatarGrid');
+      grid.innerHTML = avatars.map(a => `
+        <div onclick="window.selectedRegAvatar=${a.style};document.querySelectorAll('#regAvatarGrid > div').forEach(d=>d.style.border='3px solid transparent');this.style.border='3px solid #00d4ff'" style="
+          cursor:pointer;border-radius:15px;padding:10px;
+          border:3px solid ${a.style === 0 ? '#00d4ff' : 'transparent'};
+          background:rgba(255,255,255,0.05);transition:all 0.3s;
+          text-align:center;
+        ">
+          <img src="${a.preview}" style="width:60px;height:60px;border-radius:50%;">
+          <p style="font-size:0.75rem;color:#aaa;margin-top:5px;">${a.name}</p>
+        </div>
+      `).join('');
+    });
+  
+  window.selectedRegAvatar = 0;
+}
+
+async function completeRegister(username, email, password) {
+  const avatarStyle = window.selectedRegAvatar || 0;
+  
   try {
     const res = await fetch('/api/auth/register', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, avatarStyle })
     });
+    
     const data = await res.json();
     if (data.token) {
       state.token = data.token;
       state.user = data.user;
       state.isGuest = false;
       localStorage.setItem('gamehub_token', data.token);
+      document.getElementById('regAvatarModal').remove();
       initSocket();
       showMainApp();
     } else {
@@ -58,12 +178,13 @@ async function register() {
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-
+  
   if (!email || !password) return alert('Email ve şifre girin');
-
+  
   try {
     const res = await fetch('/api/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
@@ -86,8 +207,8 @@ function playAsGuest() {
   state.user = {
     _id: 'guest_' + Date.now(),
     username: 'Misafir_' + Math.floor(Math.random() * 9999),
-    coins: 1000, level: 1, xp: 0, gamesPlayed: 0, wins: 0,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=guest'
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=guest',
+    coins: 1000, level: 1, xp: 0, gamesPlayed: 0, wins: 0
   };
   state.isGuest = true;
   state.token = null;
@@ -158,7 +279,7 @@ const games = [
 function renderGames(filter = 'all') {
   const grid = document.getElementById('gamesGrid');
   const filtered = filter === 'all' ? games : games.filter(g => g.category === filter);
-
+  
   grid.innerHTML = filtered.map(game => `
     <div class="game-card" onclick="openGame('${game.id}')">
       <div class="game-icon" style="background: linear-gradient(135deg, ${game.color}33, ${game.color}11)">
@@ -186,20 +307,20 @@ function filterGames(category) {
 function openGame(gameId) {
   const game = games.find(g => g.id === gameId);
   if (!game) return;
-
+  
   state.currentGame = gameId;
   document.getElementById('gameTitle').textContent = game.name;
   document.getElementById('gameModal').classList.add('active');
-
+  
   const container = document.getElementById('gameContainer');
   container.innerHTML = '';
-
-  // Load game script dynamically
+  
   const script = document.createElement('script');
   script.src = `/games/${gameId}.js`;
   script.onload = () => {
-    if (window[`init${gameId.charAt(0).toUpperCase() + gameId.slice(1)}`]) {
-      state.gameInstance = window[`init${gameId.charAt(0).toUpperCase() + gameId.slice(1)}`](container);
+    const fnName = 'init' + gameId.charAt(0).toUpperCase() + gameId.slice(1);
+    if (window[fnName]) {
+      state.gameInstance = window[fnName](container);
     }
   };
   document.head.appendChild(script);
@@ -229,7 +350,7 @@ async function showLeaderboard() {
     const res = await fetch(`/api/games/leaderboard/${state.currentGame}?limit=10`);
     const scores = await res.json();
     const list = document.getElementById('leaderboardList');
-
+    
     list.innerHTML = scores.length === 0 
       ? '<p class="text-center" style="color:#888;padding:20px;">Henüz skor yok</p>'
       : scores.map((s, i) => `
@@ -239,7 +360,7 @@ async function showLeaderboard() {
           <span class="lb-score">${s.score.toLocaleString()}</span>
         </div>
       `).join('');
-
+    
     document.getElementById('leaderboardModal').classList.add('active');
   } catch (err) {
     console.error('Leaderboard error:', err);
@@ -256,7 +377,10 @@ async function saveScore(gameId, score) {
   try {
     await fetch('/api/games/score', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + state.token
+      },
       body: JSON.stringify({ userId: state.user._id, gameId, score, username: state.user.username })
     });
   } catch (err) { console.error('Save score error:', err); }
